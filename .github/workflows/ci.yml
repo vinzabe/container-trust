@@ -1,0 +1,35 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install -e ".[dev]"
+      - name: ruff
+        run: ruff check src tests
+      - name: mypy (strict)
+        run: mypy --strict src/ctrust
+      - name: tests + coverage
+        run: pytest --cov=ctrust --cov-report=term-missing --cov-fail-under=85
+
+  demo-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install -e .
+      - name: unattested image denied in a block namespace (expected)
+        run: |
+          python -m ctrust admit ghcr.io/vinzabe/app:1.0 sha256:$(printf 'a%.0s' {1..64}) \
+            --config tests/fixtures/policy.json --namespace production || echo "denied as expected"

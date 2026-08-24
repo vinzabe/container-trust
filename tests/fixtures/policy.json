@@ -1,0 +1,8 @@
+{
+  "trusted_builders": ["github-actions@ci.example.com"],
+  "trusted_source_prefixes": ["https://github.com/vinzabe/"],
+  "trusted_registries": ["ghcr.io", "registry.example.com"],
+  "require_signature": true,
+  "default_mode": "block",
+  "namespace_modes": {"staging": "warn", "sandbox": "audit"}
+}
